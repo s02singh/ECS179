@@ -6,8 +6,8 @@ public class LaunchProjectile : MonoBehaviour
 {   
     public GameObject bow;
     public GameObject player;
-    public float horizontalForce = 15f;
-    public float verticalForce = 1f;
+    public float horizontalSpeed = 25f;
+    public float verticalSpeed = 3f;
 
     public void Launch(GameObject projectile)
     {
@@ -24,8 +24,8 @@ public class LaunchProjectile : MonoBehaviour
         Rigidbody rb = Instantiate(projectile, startingPosition, rotation).GetComponent<Rigidbody>();
 
         // Add forces to the projectile
-        rb.AddForce(direction * horizontalForce, ForceMode.Impulse);
-        rb.AddForce(transform.up * verticalForce, ForceMode.Impulse);
+        rb.AddForce(direction * horizontalSpeed, ForceMode.Impulse);
+        rb.AddForce(transform.up * verticalSpeed, ForceMode.Impulse);
 
         // Destroy the projectile after a delay
         Destroy(rb.gameObject, 2f);

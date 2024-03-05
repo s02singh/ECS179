@@ -3,9 +3,9 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    [SerializeField] private NavMeshAgent agent;
-    [SerializeField] private Animator animator;
-    [SerializeField] private Transform player;
+    private NavMeshAgent agent;
+    private Transform player;
+    private Animator animator;
     [SerializeField] private float health;
 
     // Attacking
@@ -13,7 +13,7 @@ public class EnemyAI : MonoBehaviour
     private float timeSinceLastAttack;
     private float distanceToPlayer;
     [SerializeField] private float attackRange;
-    [SerializeField] private bool playerInAttackRange, animated, alive;
+    [SerializeField] private bool playerInAttackRange, animated, alive, attacking, zombie, archer, warrok;
     [SerializeField] private int rotationSpeed;
 
     private void Awake()
@@ -24,9 +24,10 @@ public class EnemyAI : MonoBehaviour
         {
             animator = GetComponent<Animator>();
         }
-        alive = true;
         // Ready for attack
         timeSinceLastAttack = timeBetweenAttacks;
+        attacking = false;
+        alive = true;
     }
 
     private void Update()
@@ -61,7 +62,10 @@ public class EnemyAI : MonoBehaviour
     private void FollowPlayer()
     {
         // Set enemy's destination to player's position
-        agent.SetDestination(player.position);
+        if (!attacking)
+        {
+            agent.SetDestination(player.position);
+        }
         if (animated)
         {
             animator.SetBool("inRange", false);
@@ -72,21 +76,37 @@ public class EnemyAI : MonoBehaviour
     {
         // Make sure enemy doesn't move when attacking player
         agent.SetDestination(transform.position);
+        
+        startAttack();
+    }
 
+    private void startAttack()
+    {
         // Aim at enemy
-        Vector3 directionToPlayer = (player.position - transform.position).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer, Vector3.up);
-        transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        // Start attack (aiming at player) if not currently attacking for melee
+        // Ranged characters can keep aiming at player while attacking
+        if (!attacking || !warrok)
+        {
+            Vector3 directionToPlayer = (player.position - transform.position).normalized;
+            Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer, Vector3.up);
+            transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        }
 
-        if (animated)
+        if (!attacking && animated)
         {
             animator.SetBool("inRange", true);
             if (timeSinceLastAttack >= timeBetweenAttacks)
             {
                 animator.SetTrigger("attack");
+                attacking = true;
                 timeSinceLastAttack = 0;
             }
         }
+    }
+    private void endAttack()
+    {
+        attacking = false;
+        animator.SetBool("inRange", false);
     }
 
     // TODO: DAMAGE IMPLEMENTATION
