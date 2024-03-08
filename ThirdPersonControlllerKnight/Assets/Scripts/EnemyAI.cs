@@ -9,11 +9,12 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float health;
 
     // Attacking
+    private RaycastHit hit;
     [SerializeField] private float timeBetweenAttacks;
     private float timeSinceLastAttack;
     private float distanceToPlayer;
     [SerializeField] private float attackRange;
-    [SerializeField] private bool playerInAttackRange, animated, alive, attacking, zombie, archer, warrok;
+    [SerializeField] private bool playerInAttackRange, animated, alive, attacking;
     [SerializeField] private int rotationSpeed;
 
     private void Awake()
@@ -41,6 +42,11 @@ public class EnemyAI : MonoBehaviour
         timeSinceLastAttack += Time.deltaTime;
         // Check for attack range
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        // Rotate look direction towards player
+        Vector3 directionToPlayer = (player.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer, Vector3.up);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
 
         if (distanceToPlayer < attackRange)
         {
@@ -85,21 +91,30 @@ public class EnemyAI : MonoBehaviour
         // Aim at enemy
         // Start attack (aiming at player) if not currently attacking for melee
         // Ranged characters can keep aiming at player while attacking
-        if (!attacking || !warrok)
+        if (attacking)
         {
-            Vector3 directionToPlayer = (player.position - transform.position).normalized;
-            Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer, Vector3.up);
-            transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+            return;
         }
 
-        if (!attacking && animated)
+        if (animated)
         {
             animator.SetBool("inRange", true);
             if (timeSinceLastAttack >= timeBetweenAttacks)
             {
                 animator.SetTrigger("attack");
                 attacking = true;
-                timeSinceLastAttack = 0;
+            }
+        }
+    }
+    private void RaycastHit()
+    {
+        // Raycast for melee enemies
+        if (Physics.Raycast(transform.position + Vector3.up, transform.forward, out hit, attackRange))
+        {
+
+            if (hit.collider.gameObject.CompareTag("Player"))
+            {
+                player.GetComponent<PlayerController>()?.TakeDamage(20); // NEED DAMAGE ENGINE
             }
         }
     }
@@ -107,6 +122,7 @@ public class EnemyAI : MonoBehaviour
     {
         attacking = false;
         animator.SetBool("inRange", false);
+        timeSinceLastAttack = 0;
     }
 
     // TODO: DAMAGE IMPLEMENTATION

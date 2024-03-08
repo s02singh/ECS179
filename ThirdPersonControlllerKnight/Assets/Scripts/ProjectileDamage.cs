@@ -8,6 +8,7 @@ public class ProjectileDamage : MonoBehaviour
         {
             Debug.Log("Hit player!");
             Destroy(this.gameObject);
+            other.GetComponent<PlayerController>()?.TakeDamage(20); // NEED DAMAGE ENGINE
         }
     }
 }
