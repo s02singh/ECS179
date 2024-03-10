@@ -11,6 +11,7 @@ public class LaunchProjectile : MonoBehaviour
 
     public void Launch(GameObject projectile)
     {
+        player = GameObject.Find("PlayerArmature");
         // Get the position of the bow
         Vector3 startingPosition = bow.transform.position;
 

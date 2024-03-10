@@ -6,7 +6,7 @@ public class ProjectileDamage : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            Debug.Log("Hit player!");
+            //Debug.Log("Hit player!");
             Destroy(this.gameObject);
             other.GetComponent<PlayerController>()?.TakeDamage(20); // NEED DAMAGE ENGINE
         }
